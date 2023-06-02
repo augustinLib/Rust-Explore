@@ -1,6 +1,24 @@
-# Number
+# Data type
+Rust의 Data type은 크게 아래와 같이 두 종류로 나뉜다.
+- Scalar type
+- Compound type
 
-## Rust에서의 숫자 타입
+Rust는 **정적 타입 언어**이다. 즉, 컴파일 시점에 모든 변수의 타입이 결정되어야 한다.  
+한 프로그램 내에서 여러 타입을 사용할 경우에는 type annotation을 통해 타입을 명시해줘야 한다.  
+
+
+## Scalar type
+Scalar type은 하나의 값으로 표현되는 타입이다. Rust는 다음과 같은 Scalar type을 지원한다.
+- Integer
+- Floating-point number
+- Boolean
+- Character
+
+
+## Number
+Integer와 Floating-point number는 Rust에서 숫자를 나타내는 두 가지 타입이다.
+
+### Rust에서의 숫자 타입
 - Rust는 정수와 부동소수점 숫자를 지원한다.
 - C, C++와 같이 다양한 숫자 타입을 가지며, 이를 명시적으로 선언해줘야한다.  
 - Rust에서는 타입 간 변환이 항상 명시적으로 일어나며, 16비트 정수를 32비트 정수로 자동 변환하지 않는다.
@@ -44,7 +62,7 @@ fn main() {
 
 ```
 
-## 2진수, 8진수, 16진수
+### 2진수, 8진수, 16진수
 Rust는 2진수, 8진수, 16진수를 지원한다.  
 2진수는 `0b`로 시작하며, 8진수는 `0o`로 시작하며, 16진수는 `0x`로 시작한다.  
 ```Rust
@@ -61,7 +79,7 @@ fn main() {
     println!("base 16: {:x} {:x} {:x}", three, thirty, three_hundred);
 }
 ```
-## 숫자 타입 종류
+### 숫자 타입 종류
 | type | description |
 |:---:|:---:|
 | `i8`, `i16`, `i32`, `i64`, `i128` | 8비트에서 128비트 크기의 부호 있는 정수 |
@@ -72,7 +90,7 @@ fn main() {
 - 부호 없는 정수는 양의 정수만 나타낼 수 있지만, 부호 있는 정수에 비해 2배 큰 수를 나타낼 수 있다. (C와 C++의 `unsigned`와 같음)
 - 부동 소수점 수는 `f32`와 `f64`가 있으며, `f64`가 더 정밀한 값을 나타낼 수 있다. (C와 C++의 `float`와 `double`과 같음)
 
-## 수의 비교
+### 수의 비교
 Rust에서의 비교 연산은 트레이트(trait)를 통해 제공됨.  
 | operator | description | example | 
 |:---:|:---:|:---:|
@@ -121,7 +139,7 @@ fn main() {
 }
 ```
 
-## 유리수, 복소수, 기타 숫자 타입
+### 유리수, 복소수, 기타 숫자 타입
 Rust의 표준 라이브러리는 비교적 작으며, 다른 언어에서 자주 사용하는 몇 가지의 숫자 타입은 빠져 있다. 이는 아래와 같다.  
 - 유리수 및 복소수를 다루는 데 사용하는 많은 수학적 객체
 - 매우 크거나 매우 작은 수를 표현할 수 있는 임의의 크기를 가지는 정수와 임의의 정밀도롤 가지는 부동 소수점 수
@@ -145,4 +163,71 @@ cargo install cargo-edit
 **`cargo add`로 크레이트 추가**
 ```bash
 cargo add num
+```
+## Boolean
+Rust의 boolean 타입은 `bool`이며, `true`와 `false` 두 가지 값만 가질 수 있다.  
+추가적으로, boolean 타입은 1바이트 크기이다.  
+```Rust
+fn main() {
+    let t = true;
+    let f: bool = false; // 명시적 타입 지정
+
+    println!("t = {}, f = {}", t, f);
+}
+```
+
+## Character
+Rust의 문자 타입은 `char`이며, 4바이트 크기이다.  
+(Rust는 유니코드를 사용하며, 유니코드는 4바이트 크기이다.)  
+또한 Rust에서는 문자열을 표현하기 위해 큰따옴표(`"`)를 사용하며, 문자를 표현하기 위해 작은따옴표(`'`)를 사용한다.  
+(C++과 동일)
+```Rust
+fn main() {
+    let c = 'c';
+    println!("c = {}", c)
+}
+```
+
+## Compound Types
+Compound Type은 하나의 타입으로 여러 개의 값을 그룹화한 타입이다.  
+Rust에서의 Compound Type은 아래와 같다.
+- Tuple
+- Array
+
+
+## Tuple
+Tuple은 **서로 다른 타입의 여러 값**을 하나의 그룹으로 묶어서 표현하는 타입이다.  
+Tuple은 **고정된 길이를 가지며, 한 번 생성되면 길이를 변경할 수 없다.**
+
+Tuple은 아래와 같이 소괄호로 값의 목록을 쉼표로 구분하여 선언한다. (python과 동일)
+```Rust
+fn main() {
+    // tuple의 선언 및 값 할당
+    // 소괄호로 값을 묶어서 선언하며, 각각의 값은 콤마로 구분함
+    // annotation의 경우에도 동일하게 적용됨
+    let tup: (i32, f64, u8) = (500, 6.4, 1);
+    println!("tup = {:?}", tup);
+}
+```
+
+또한, python과 비슷하게 tuple의 개별 값을 아래와 같이 해체할 수 있다
+```Rust
+fn main() {
+    let tup = (500, 6.4, 1);
+    // tuple의 값을 해체하여 변수에 할당
+    let (x, y, z) = tup;
+    println!("x = {}, y = {}, z = {}", x, y, z);
+}
+```
+
+추가적으로, 아래와 같이 . 다음에 인덱스를 지정하여 tuple의 각 요소를 직접 참조할 수 있다.
+```Rust
+fn main() {
+    let tup = (500, 6.4, 1);
+    // tuple의 값을 참조하여 변수에 할당
+    let x = tup.0;
+    let y = tup.1;
+    let z = tup.2;
+    println!("x = {}, y = {}, z = {}", x, y, z);
+}
 ```

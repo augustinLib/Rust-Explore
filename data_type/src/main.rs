@@ -8,6 +8,11 @@ fn main() {
     type_compare();
     new_type_compare();
     complex();
+    boolean();
+    charater();
+    tuple();
+    unpack_tuple();
+    ref_tuple();
 }
 
 fn basic_num() {
@@ -97,4 +102,40 @@ fn complex() {
     let result = a + b;
 
     println!("{} + {}i", result.re, result.im);
+}
+
+fn boolean() {
+    let t = true;
+    let f: bool = false; // 명시적 타입 지정
+
+    println!("t = {}, f = {}", t, f);
+}
+
+fn charater() {
+    let c = 'c';
+    println!("c = {}", c)
+}
+
+fn tuple() {
+    // tuple의 선언 및 값 할당
+    // 소괄호로 값을 묶어서 선언하며, 각각의 값은 콤마로 구분함
+    // annotation의 경우에도 동일하게 적용됨
+    let tup: (i32, f64, u8) = (500, 6.4, 1);
+    println!("tup = {:?}", tup);
+}
+
+fn unpack_tuple() {
+    let tup = (500, 6.4, 1);
+    // tuple의 값을 해체하여 변수에 할당
+    let (x, y, z) = tup;
+    println!("x = {}, y = {}, z = {}", x, y, z);
+}
+
+fn ref_tuple() {
+    let tup = (500, 6.4, 1);
+    // tuple의 값을 참조하여 변수에 할당
+    let x = tup.0;
+    let y = tup.1;
+    let z = tup.2;
+    println!("x = {}, y = {}, z = {}", x, y, z);
 }
