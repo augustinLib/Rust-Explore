@@ -13,6 +13,8 @@ fn main() {
     tuple();
     unpack_tuple();
     ref_tuple();
+    array();
+    array_element();
 }
 
 fn basic_num() {
@@ -138,4 +140,16 @@ fn ref_tuple() {
     let y = tup.1;
     let z = tup.2;
     println!("x = {}, y = {}, z = {}", x, y, z);
+}
+
+fn array() {
+    // annotation은 [타입, 길이] 와 같은 형식으로 작성함
+    let a: [i32; 5] = [1, 2, 3, 4, 5];
+    println!("a = {:?}", a);
+}
+
+fn array_element() {
+    let a: [i32; 5] = [1, 2, 3, 4, 5];
+    // 배열의 요소는 인덱스를 통해 접근할 수 있음
+    println!("a[0] = {}", a[0]);
 }
