@@ -101,3 +101,79 @@ fn main() {
     }
 }
 ```
+
+## Loop
+`loop`키워드는 반복문을 중지하라고 명시적으로 설정하지 않는 이상, 코드 블록을 무한으로 반복해서 실행한다.  
+이는 아래와 같은 형태를 지닌다.
+```rust
+fn loop_basic() {
+    loop {
+        println!("again!");
+    }
+}
+```
+이러한 loop문은 `break`문을 사용하여 중지시킬 수 있다.
+
+### loop문을 사용하여 값을 반환하기
+loop문을 증단하는 `break` 표현식 다음에 반환하고자 하는 값을 추가하면, loop문을 사용하여 값을 반환할 수 있다.
+```rust
+fn main() {
+    let mut counter = 0;
+
+    // loop문에서 반환된 값을 result에 할당
+    let result = loop {
+        counter += 1;
+        if counter == 10 {
+            // break 키워드를 사용하여 반복문을 종료하고 값을 반환
+            break counter * 2;
+        }
+    };
+    println!("The result is {}", result);
+}
+```
+
+
+## If
+Rust에서의 if문은 기본적으로 아래와 같은 형태를 지닌다.
+```rust
+fn main() {
+    let number = 3;
+    if number < 5 {
+        println!("condition was true");
+    } else {
+        println!("condition was false");
+    }
+}
+```
+
+else if문을 사용할 때는 아래와 같은 형태를 지닌다.
+```rust
+fn main() {
+    let number = 6;
+    if number % 4 == 0 {
+        println!("number is divisible by 4");
+    } else if number % 3 == 0 {
+        println!("number is divisible by 3");
+    } else if number % 2 == 0 {
+        println!("number is divisible by 2");
+    } else {
+        println!("number is not divisible by 4, 3, or 2");
+    }
+}
+```
+
+### let statement(구문)에서 if expression(표현식) 사용하기
+Rust에서, if는 표현식이기에 `let` statement 오른쪽에 사용할 수 있다.  
+```rust
+fn main() {
+    let condition = true;
+    let number = if condition {
+        5
+    } else {
+        6
+    };
+    println!("The value of number is: {}", number);
+}
+``` 
+{}로 표현되는 코드 블록의 결과는 마지막 표현식의 값을 평가하며, 숫자 자체도 하나의 표현식이다.  
+위와 같은 경우에는 if 표현식의 결과가 `number`에 할당되기에, 모든 분기에서 반환하는 결과는 같은 타입이어야만 한다.  
