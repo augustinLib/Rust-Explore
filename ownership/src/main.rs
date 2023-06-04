@@ -6,6 +6,9 @@ fn main() {
     ownership_function();
     ownership_return();
     return_tuple();
+    with_reference();
+    with_mut_reference();
+    is_dangle();
 }
 
 fn integer() {
@@ -100,4 +103,47 @@ fn calculate_length(s: String) -> (String, usize) {
     // tuple을 이용하여 여러 값을 반환할 수 있음
     // 이때, 함수에 전달했던 변수를 다시 사용하기 위해 수정된 값과 함께 반환함
     (s, length)
+}
+
+fn with_reference() {
+    let s1 = String::from("hello");
+
+    let len = calculate_length_reference(&s1); // &s1을 통해 s1의 참조자를 전달함
+
+    println!("The length of '{}' is {}.", s1, len); // 참조자를 전달했기 때문에 여전히 s1을 사용할 수 있음
+}
+
+// & : 참조자(reference)
+// 참조자를 이용하면 변수를 함수에 전달할 때, 변수의 소유권을 넘기지 않고도 변수를 참조할 수 있음
+// 이렇게 함수 매개변수로 reference를 전달하는 것을 'borrowing'이라고 함
+fn calculate_length_reference(s: &String) -> usize {
+    s.len()
+} // 여기서 s는 scope 밖으로 벗어나지만, 참조자이기 때문에 아무 일도 일어나지 않음
+
+
+fn with_mut_reference() {
+    // let mut 키워드로 mutable한 변수를 생성함
+    let mut s = String::from("hello");
+
+    change(&mut s); // &mut s를 통해 s의 가변 참조자를 전달함
+
+    println!("{}", s); // 참조자를 전달했기 때문에 여전히 s를 사용할 수 있음
+}
+
+// &mut : 가변 참조자(mutable reference)
+// 함수에서 &mut 키워드를 통해 가변 참조자를 전달받음
+fn change(some_string: &mut String) {
+    some_string.push_str(", world"); // 가변 참조자를 통해 s의 값을 변경함
+}
+
+fn is_dangle() {
+    let reference_to_nothing = no_dangle();
+
+    println!("{}", reference_to_nothing);
+}
+
+fn no_dangle() -> String { // String 타입을 반환함
+    let s = String::from("hello");
+
+    s // s를 반환함
 }

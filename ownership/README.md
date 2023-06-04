@@ -258,3 +258,145 @@ fn calculate_length(s: String) -> (String, usize) {
 <br>
 
 ## References and Borrowing(참조와 대여)
+기존 방식처럼 함수로 하여금 원본 값도 반환하게 하여 ownership을 다시 되돌려주는 것은 매우 비효율적이다.  
+이러한 방법 대신, 함수의 parameter로 전달된 객체의 reference를 이용하도록 할 수 있다.
+```rust
+fn main() {
+    let s1 = String::from("hello");
+
+    let len = calculate_length_reference(&s1); // &s1을 통해 s1의 참조자를 전달함
+
+    println!("The length of '{}' is {}.", s1, len); // 참조자를 전달했기 때문에 여전히 s1을 사용할 수 있음
+}
+
+// & : 참조자(reference)
+// 참조자를 이용하면 변수를 함수에 전달할 때, 변수의 소유권을 넘기지 않고도 변수를 참조할 수 있음
+// 이렇게 함수 매개변수로 reference를 전달하는 것을 'borrowing'이라고 함
+fn calculate_length_reference(s: &String) -> usize {
+    s.len()
+} // 여기서 s는 scope 밖으로 벗어나지만, 참조자이기 때문에 아무 일도 일어나지 않음
+```
+위 예제의 동작 방식은 아래와 같다.
+
+<div align="center">
+<img src="https://doc.rust-lang.org/book/img/trpl04-05.svg" width=50%>
+</div>
+
+`&s1`를 사용하면 **변수 `s1`의 값은 읽을 수 있지만, ownership은 가져오지 않는 reference를 생성**한다.  
+Reference는 ownership을 갖지 않기 때문에 reference가 가리키는 값(변수 `s1`)은 reference가 scope를 벗어나더라도 `drop`함수가 호출되지 않는다
+
+또한, 이처럼 **함수의 parameter로 reference를 전달하는 것을 borrowing(대여)** 라고 한다.  
+추가적으로, 변수가 기본적으로 immutable인것처럼, reference 역시 기본적으로 immutable하다. 따라서 참조하고 있는 값을 변경할 수 없다.  
+그렇다면 참고하고 있는 값을 변경하고 싶다면 어떻게 해야할까?  
+
+## Mutable References(가변 참조자)
+만약 참조하고 있는 값을 변경하고 싶다면, `&mut`을 사용하여 mutable reference를 생성해야 한다.
+```rust
+fn main() {
+    // let mut 키워드로 mutable한 변수를 생성함
+    let mut s = String::from("hello");
+
+    change(&mut s); // &mut s를 통해 s의 가변 참조자를 전달함
+
+    println!("{}", s); // 참조자를 전달했기 때문에 여전히 s를 사용할 수 있음
+}
+
+// &mut : 가변 참조자(mutable reference)
+// 함수에서 &mut 키워드를 통해 가변 참조자를 전달받음
+fn change(some_string: &mut String) {
+    some_string.push_str(", world"); // 가변 참조자를 통해 s의 값을 변경함
+}
+```
+
+그러나 이러한 가변 참조에도 제약이 있다.  
+바로 **특정 scope 내에서의 특정 변수에 대한 가변 참조자는 오직 하나만 존재**할 수 있다는 것이다.  
+아래 예제를 보자.
+```rust
+fn main() {
+    let mut s = String::from("hello");
+
+    let r1 = &mut s; // 가변 참조자 생성
+    let r2 = &mut s; // 가변 참조자 생성
+
+    println!("{}, {}", r1, r2); // error!
+}
+```
+위 예제는 실행되지 않는다. main함수의 scope 내에서 s에 대한 가변 참조자가 두 개 존재하기 때문이다.  
+
+이러한 제약 덕분에 Rust는 data races(데이터 경합)을 컴파일 시점에 방지할 수 있다.
+Data races(데이터 경합)는 예측할 수 없는 결과를 유발하며, 런타임에 원인을 파악하고 수정하기 매우 어렵다.  
+
+다만, 하나의 변수에 대해 여러 가변 참조자를 활용하고 싶으면, 아래와 같이 중괄호를 이용하면 된다.
+```rust
+fn main() {
+    let mut s = String::from("hello");
+    {
+        let r1 = &mut s; // 가변 참조자를 생성함
+    } // scope 밖으로 벗어나면서 가변 참조자가 소멸됨
+    
+    let r2 = &mut s; // 두 번째 가변 참조자를 생성함
+    // 앞선 예제와는 다르게, 다른 scope에서 가변 참조자를 생성하였기 때문에 에러가 발생하지 않음
+}
+```
+
+만약 scope 내에서 이미 불변 참조를 사용하고 있다면, 가변 참조자를 생성할 수 없다.  
+아래의 예제는 에러를 발생시킨다.  
+```rust
+fn main() {
+    let mut s = String::from("hello");
+
+    // 불변 참조자는 읽기 전용이기에 scope 내에서 여러 개를 생성해도 문제가 없음
+    let r1 = &s; // 불변 참조자 생성
+    let r2 = &s; // 불변 참조자 생성
+
+    // 이미 불변 참조자가 존재하기 때문에 가변 참조자를 생성할 수 없음
+    let r3 = &mut s; // 가변 참조자 생성
+
+    println!("{}, {}, and {}", r1, r2, r3); // error!
+}
+```
+
+## Dangling References(죽은 참조)
+포인터를 사용하는 언어의 경우, dangling pointer(죽은 포인터)로 인해 에러가 발생할 수 있다.  
+Dangling pointer(죽은 포인터)란, 메모리가 해제되었거나, 다른 변수가 할당되었음에도 불구하고 여전히 해당 메모리를 참조하고 있는 포인터를 의미한다.  
+
+Rust는 dangling pointer(죽은 포인터)를 컴파일 시점에 방지할 수 있다.  
+즉, 어떤 데이터에 대한 reference를 생성할 때, 컴파일러가 해당 데이터에 대한 참조를 실행하기에 앞서 해당 데이터가 범위를 벗어나지 않았는지를 확인한다.  
+아래 예제는 죽은 참조를 생성하는 예제이다.
+```rust
+fn main() {
+    let reference_to_nothing = dangle();
+}
+
+fn dangle() -> &String { // String에 대한 참조자를 반환함
+    let s = String::from("hello"); // s는 새로운 String을 생성함
+
+    &s // s의 참조자를 반환함
+} // s는 scope를 벗어나고, drop 함수가 호출됨. 따라서 s는 메모리에서 해제됨
+// 따라서, s의 참조자를 반환하는 것은 불가능함
+```
+변수 `s`가 `dangle`함수 내에서 생성되었기 때문에, `dangle`함수가 종료되면서 `s`는 메모리에서 해제된다.  
+그러나 이 함수는 해제된 메모리(변수 `s`)를 참조하고 있는 참조자를 반환하고 있다.  
+이는 메모리 참조 에러를 발생시키는데, Rust는 이러한 상황을 컴파일 시점에 방지한다.
+
+이러한 문제를 해결하려면, 아래와 같이 참조자가 아닌, String 타입을 반환해야 한다.  
+```rust
+fn main() {
+    let reference_to_nothing = no_dangle();
+}
+
+fn no_dangle() -> String { // String 타입을 반환함
+    let s = String::from("hello");
+
+    s // s를 반환함
+}
+```
+
+## 참조에 대한 규칙
+지금까지 알아본 참조자에 대한 규칙을 정리하면 아래와 같다.
+- 어느 한 scope 내에서, 하나의 가변 참조 혹은 여러 개의 불변 참조를 생성할 수 있지만, 가변 참조와 불변 참조 모두를 동시에 생성할 수 없다.
+- 참조자는 항상 유효해야 한다.
+
+## Slice 타입
+Slice는 참조자와 같이 ownership을 갖지 않는 데이터 타입이다.  
+Slice를 사용하면 컬렉션 전체가 아닌, 컬렉션 내의 일부 연속된 요소에 대한 참조자를 생성할 수 있다.  
