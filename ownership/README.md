@@ -400,3 +400,130 @@ fn no_dangle() -> String { // String 타입을 반환함
 ## Slice 타입
 Slice는 참조자와 같이 ownership을 갖지 않는 데이터 타입이다.  
 Slice를 사용하면 컬렉션 전체가 아닌, 컬렉션 내의 일부 연속된 요소에 대한 참조자를 생성할 수 있다.  
+
+만약 전달된 문자열에서 첫 번째 단어만 반환하는 함수를 작성하고 싶다면, 아래와 같이 첫 번째 단어의 마지막 인덱스를 반환하는 함수를 작성할 수 있다.
+```rust
+fn main() {
+    let mut s = String::from("hello world");
+
+    let word = first_word(&s); // s의 참조자를 전달함
+
+    s.clear(); // s의 값을 변경함
+    // s.clear()를 호출하여 s의 값을 변경한 이후에도 scope가 끝나지 않았기에 word변수는 여전히 유효
+    // 하지만, s의 값이 변경되었기 때문에 word 변수는 더이상 의미가 없음
+}
+
+fn first_word(s: &String) -> usize {
+    let bytes = s.as_bytes(); // 문자열을 바이트 단위로 변환함
+
+    // iter() 함수를 통해 bytes의 반복자를 생성함
+    // 이때, iter().enumerate()가 반환하는 바이트 요소에 대한 참조를 얻어와야해서 &item
+    for (i, &item) in bytes.iter().enumerate() { 
+        if item == b' ' { // 반복자를 통해 문자열을 순회하면서 공백 문자를 찾음
+            return i; // 공백 문자를 찾으면 해당 인덱스를 반환함
+        }
+    }
+
+    s.len() // 공백 문자를 찾지 못하면 문자열의 길이를 반환함
+}
+```
+위의 예제는 변수 s에 저장된 값의 변화에 즉각적으로 반응하지 못한다.  
+이러한 문제를 해결하기 위해, Rust에서는 문자열 slice를 사용할 수 있다.  
+
+## String Slice
+String slice는 String 타입의 일부분에 대한 참조자이다. 아래와 같이 활용 가능하다.  
+```rust
+fn main() {
+    // 문자열 리터럴로부터 String 타입의 변수를 생성함
+    let s = String::from("hello world");
+
+    let hello = &s[0..5]; // &s[0..5]는 &s[..5]와 동일함
+    let world = &s[6..11]; // &s[6..11]는 &s[6..]와 동일함
+
+    println!("{} {}", hello, world);
+}
+```
+String slice는 문자열의 일부분에 대한 참조자이기 때문에, 문자열 slice를 생성하기 위해서는 참조자를 생성하는 것과 동일하게 `&`를 사용한다.  
+다만, string slice를 생성하기 위해서는 `&` 뒤에 `[start..end]` 형태로 인덱스 범위를 지정해야 한다.  
+이때, `start` 인덱스는 포함되지만, `end` 인덱스는 포함되지 않는다.(기존 언어들과 동일)  
+위의 예제는 아래의 그림과 같이 나타낼 수 있다.  
+
+<div align="center">
+<img src="https://doc.rust-lang.org/book/img/trpl04-06.svg" width=50%>
+</div>
+
+이러한 문자열 slice를 적용하여, 아래와 같이 `first_word` 함수를 수정할 수 있다.
+```rust
+fn main() {
+    let mut s = String::from("hello world");
+
+    let word = first_word_slice(&s); // s의 참조자를 전달함
+
+    s.clear(); // s의 값을 변경함
+    // s.clear()를 호출하여 s의 값을 변경한 이후에도 scope가 끝나지 않았기에 word변수는 여전히 유효
+    // 하지만, s의 값이 변경되었기 때문에 word 변수는 더이상 의미가 없음
+}
+
+fn first_word_slice(s: &String) -> &str { // &str 타입을 반환함
+    let bytes = s.as_bytes(); // 문자열을 바이트 단위로 변환함
+
+    // iter() 함수를 통해 bytes의 반복자를 생성함
+    // 이때, iter().enumerate()가 반환하는 바이트 요소에 대한 참조를 얻어와야해서 &item
+    for (i, &item) in bytes.iter().enumerate() { 
+        if item == b' ' { // 반복자를 통해 문자열을 순회하면서 공백 문자를 찾음
+            return &s[0..i]; // 공백 문자를 찾으면 해당 인덱스까지의 문자열 슬라이스를 반환함
+        }
+    }
+
+    &s[..] // 공백 문자를 찾지 못하면 문자열 전체를 반환함
+}
+```
+
+## String literal == String slice
+아래와 같은 문자열 리터럴이 있다고 가정해보자
+```rust
+let s = "hello world";
+```
+위 예제에서 변수 `s`의 타입은 `&str`이다.  
+즉, 바이너리의 어느 한 지점을 가리키는 slice이다.  
+이때, &str 타입은 불변 참조자이기 때문에, `s`(문자열 리터럴)는 immutable하다.  
+
+## String slice as parameter
+문자열 리터럴이나 String의 값으로부터 slice를 생성할 수 있다는 사실은 앞서 살펴보았던 `first_word` 함수를 개선할 수 있음을 의미한다.  
+```rust
+fn main() {
+    let my_string = String::from("hello world");
+
+    let word = first_word_literal(&my_string[..]);
+
+    let my_string_literal = "hello world";
+
+    let word = first_word_literal(&my_string_literal[..]);
+
+    // 문자열 리터럴은 이미 문자열 슬라이스이기 때문에 &my_string_literal[..]와 my_string_literal는 동일함
+    let word = first_word_literal(my_string_literal);
+}
+
+fn first_word_literal(s: &str) -> &str { // &str 타입을 반환함 (문자열 슬라이스)
+    let bytes = s.as_bytes(); // 문자열을 바이트 단위로 변환함
+
+    // iter() 함수를 통해 bytes의 반복자를 생성함
+    // 이때, iter().enumerate()가 반환하는 바이트 요소에 대한 참조를 얻어와야해서 &item
+    for (i, &item) in bytes.iter().enumerate() { 
+        if item == b' ' { // 반복자를 통해 문자열을 순회하면서 공백 문자를 찾음
+            return &s[0..i]; // 공백 문자를 찾으면 해당 인덱스까지의 문자열 슬라이스를 반환함
+        }
+    }
+
+    &s[..] // 공백 문자를 찾지 못하면 문자열 전체를 반환함
+}
+
+```
+
+## Other slice
+String slice와 마찬가지로, 다른 타입의 slice도 존재한다.  
+```rust
+let a = [1, 2, 3, 4, 5];
+
+let slice = &a[1..3]; // [2, 3]
+```

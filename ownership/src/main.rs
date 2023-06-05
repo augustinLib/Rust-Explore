@@ -9,6 +9,11 @@ fn main() {
     with_reference();
     with_mut_reference();
     is_dangle();
+    first_word_main();
+    string_slice();
+    string_slice_with_first_word();
+    string_slice_with_literal();
+    other_slice();
 }
 
 fn integer() {
@@ -146,4 +151,96 @@ fn no_dangle() -> String { // String 타입을 반환함
     let s = String::from("hello");
 
     s // s를 반환함
+}
+
+fn first_word_main() {
+    let mut s = String::from("hello world");
+
+    let word = first_word(&s); // s의 참조자를 전달함
+
+    s.clear(); // s의 값을 변경함
+    // s.clear()를 호출하여 s의 값을 변경한 이후에도 scope가 끝나지 않았기에 word변수는 여전히 유효
+    // 하지만, s의 값이 변경되었기 때문에 word 변수는 더이상 의미가 없음
+}
+
+fn first_word(s: &String) -> usize {
+    let bytes = s.as_bytes(); // 문자열을 바이트 단위로 변환함
+
+    // iter() 함수를 통해 bytes의 반복자를 생성함
+    // 이때, iter().enumerate()가 반환하는 바이트 요소에 대한 참조를 얻어와야해서 &item
+    for (i, &item) in bytes.iter().enumerate() { 
+        if item == b' ' { // 반복자를 통해 문자열을 순회하면서 공백 문자를 찾음
+            return i; // 공백 문자를 찾으면 해당 인덱스를 반환함
+        }
+    }
+
+    s.len() // 공백 문자를 찾지 못하면 문자열의 길이를 반환함
+}
+
+fn string_slice() {
+    // 문자열 리터럴로부터 String 타입의 변수를 생성함
+    let s = String::from("hello world");
+
+    let hello = &s[0..5]; // &s[0..5]는 &s[..5]와 동일함
+    let world = &s[6..11]; // &s[6..11]는 &s[6..]와 동일함
+
+    println!("{} {}", hello, world);
+}
+
+fn string_slice_with_first_word() {
+    let mut s = String::from("hello world");
+
+    let word = first_word_slice(&s); // s의 참조자를 전달함
+
+    s.clear(); // s의 값을 변경함
+    // s.clear()를 호출하여 s의 값을 변경한 이후에도 scope가 끝나지 않았기에 word변수는 여전히 유효
+    // 하지만, s의 값이 변경되었기 때문에 word 변수는 더이상 의미가 없음
+}
+
+fn first_word_slice(s: &String) -> &str { // &str 타입을 반환함
+    let bytes = s.as_bytes(); // 문자열을 바이트 단위로 변환함
+
+    // iter() 함수를 통해 bytes의 반복자를 생성함
+    // 이때, iter().enumerate()가 반환하는 바이트 요소에 대한 참조를 얻어와야해서 &item
+    for (i, &item) in bytes.iter().enumerate() { 
+        if item == b' ' { // 반복자를 통해 문자열을 순회하면서 공백 문자를 찾음
+            return &s[0..i]; // 공백 문자를 찾으면 해당 인덱스까지의 문자열 슬라이스를 반환함
+        }
+    }
+
+    &s[..] // 공백 문자를 찾지 못하면 문자열 전체를 반환함
+}
+
+fn string_slice_with_literal() {
+    let my_string = String::from("hello world");
+
+    let word = first_word_literal(&my_string[..]);
+
+    let my_string_literal = "hello world";
+
+    let word = first_word_literal(&my_string_literal[..]);
+
+    // 문자열 리터럴은 이미 문자열 슬라이스이기 때문에 &my_string_literal[..]와 my_string_literal는 동일함
+    let word = first_word_literal(my_string_literal);
+}
+
+fn first_word_literal(s: &str) -> &str { // &str 타입을 반환함 (문자열 슬라이스)
+    let bytes = s.as_bytes(); // 문자열을 바이트 단위로 변환함
+
+    // iter() 함수를 통해 bytes의 반복자를 생성함
+    // 이때, iter().enumerate()가 반환하는 바이트 요소에 대한 참조를 얻어와야해서 &item
+    for (i, &item) in bytes.iter().enumerate() { 
+        if item == b' ' { // 반복자를 통해 문자열을 순회하면서 공백 문자를 찾음
+            return &s[0..i]; // 공백 문자를 찾으면 해당 인덱스까지의 문자열 슬라이스를 반환함
+        }
+    }
+
+    &s[..] // 공백 문자를 찾지 못하면 문자열 전체를 반환함
+}
+
+fn other_slice() {
+    let a = [1, 2, 3, 4, 5];
+
+    let slice = &a[1..3]; // [2, 3]을 가리킴
+    println!("{:?}", slice);
 }
