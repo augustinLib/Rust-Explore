@@ -141,3 +141,79 @@ fn main() {
 }
 ```
 이러한 tuple structs는 tuple과 같이 동작한다. 각 값에 대응하는 변수로 해체할 수 있고, `.`와 인덱스를 통해 개별 필드값에 접근할 수 있다.  
+
+## Unit-like Structs(유사 유닛 구조체)
+Rust에서는 구조체를 선언할 때, 필드를 하나도 가지지 않는 구조체를 선언할 수 있다.  
+이러한 구조체를 **Unit-like Structs(유사 유닛 구조체)**라고 한다. 왜냐하면, 유닛 타임, 즉 `()`과 유사하게 동작하기 때문이다.  
+이러한 Unit-like Structs는 특정 타입의 trait를 구현해야 하지만, 타입에 저장할 데이터가 없을 때 유용하게 사용된다.  
+
+## 구조체를 사용하는 예제 프로그램
+위에서 살펴본 구조체를 사용하는 예제 프로그램을 살펴보자.  
+아래 예제는 사각형의 면적 크기를 구하는 rust 프로그램이다.  
+```rust
+fn main() {
+    let width1 = 30;
+    let height1 = 50;
+
+    println!("The area of the rectangle is {} square pixels.", area(width1, height1));
+}
+
+fn area(width: u32, height: u32) -> u32 {
+    width * height
+}
+```
+위 예제는 사각형의 너비와 높이를 각각 `width`와 `height`이라는 변수에 저장하고, `area`함수를 호출하여 사각형의 면적을 구하는 예제이다.  
+
+다만, 위 예제의 경우 면적을 구하기 위해 `width`와 `height` 두 개의 parameter를 사용하였다. 두 parameter는 서로 연관이 있지만 코드상에서는 이 관계를 표현하지 않는다.  
+따라서, 위 예제는 아래와 같이 tuple로 refactoring할 수 있다.  
+```rust
+fn main() {
+    let rect1 = (30, 50);
+    println!("The area of the rectangle is {} square pixels.", area(rect1));
+}
+
+fn area(dimension: (u32, u32)) -> u32 {
+    dimension.0 * dimension.1
+}
+```
+위 예제는 tuple덕분에 `area` 함수에 하나의 parameter만 전달하면 되는 장점이 있다.  
+그러나, tuple은 요소에 이름을 부여하진 않기에, 여전히 명확하지 않다는 한계가 있다.  
+따라서, 위 예제는 아래와 같이 구조체를 사용하여 refactoring할 수 있다.  
+```rust
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn main() {
+    let rect1 = Rectangle { width: 30, height: 50 };
+    println!("The area of the rectangle is {} square pixels.", area(&rect1));
+}
+
+// &Rectangle: Rectangle 인스턴스를 참조하는 불변 참조자
+// 참조자를 사용하여 Rectangle 인스턴스를 전달하면, 인스턴스의 소유권을 넘기지 않고 Borrowing
+// 이를 통해 main함수는 여전히 rect1에 대한 소유권을 가지며, 계속 사용할 수 있음
+fn area(rectangle: &Rectangle) -> u32 {
+    rectangle.width * rectangle.height
+}
+```
+
+## Trait를 상속하여 유용한 기능 추가하기
+위에서 살펴본 rectangle 예제에서, 인스턴스의 필드가 가진 값들을 출력하는 기능을 추가하면 디버깅 측면에서 유용할 것이다.  
+이를 위해, 아래와 같이 구현을 진행하면 어떤 결과가 나오게 될까?
+```rust
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn main() {
+    let rect1 = Rectangle { width: 30, height: 50 };
+    println!("rect1: {}", rect1); // error!
+}
+```
+위와 같은 코드는 아래와 같은 에러를 발생시킨다. 
+> error[E0277]: `Rectangle` doesn't implement `std::fmt::Display`
+
+`println!` 매크로는 다양한 형식으로 문자열을 출력할 수 있으며, `{}`는 `println!` 매크로가 해당 값의 `Display` 형식을 출력하도록 한다.  
+

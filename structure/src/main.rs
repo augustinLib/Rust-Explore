@@ -14,6 +14,9 @@ fn main() {
     no_struct_update_syntax();
     with_struct_update_syntax();
     tuple_struct();
+    rectangle_1();
+    rectangle_2();
+    rectangle_3();
 }
 
 
@@ -96,4 +99,41 @@ fn tuple_struct() {
     struct Point(i32, i32, i32);
     let black = Color(0, 0, 0);
     let origin = Point(0, 0, 0);
+}
+
+fn rectangle_1() {
+    let width1 = 30;
+    let height1 = 50;
+
+    println!("The area of the rectangle is {} square pixels.", area1(width1, height1));
+}
+
+fn area1(width: u32, height: u32) -> u32 {
+    width * height
+}
+
+fn rectangle_2() {
+    let rect1 = (30, 50);
+    println!("The area of the rectangle is {} square pixels.", area2(rect1));
+}
+
+fn area2(dimension: (u32, u32)) -> u32 {
+    dimension.0 * dimension.1
+}
+
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn rectangle_3() {
+    let rect1 = Rectangle { width: 30, height: 50 };
+    println!("The area of the rectangle is {} square pixels.", area3(&rect1));
+}
+
+// &Rectangle: Rectangle 인스턴스를 참조하는 불변 참조자
+// 참조자를 사용하여 Rectangle 인스턴스를 전달하면, 인스턴스의 소유권을 넘기지 않고 Borrowing
+// 이를 통해 main함수는 여전히 rect1에 대한 소유권을 가지며, 계속 사용할 수 있음
+fn area3(rectangle: &Rectangle) -> u32 {
+    rectangle.width * rectangle.height
 }
