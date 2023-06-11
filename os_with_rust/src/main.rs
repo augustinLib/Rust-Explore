@@ -1,11 +1,17 @@
-use libc::{fork, wait, execlp, c_char, c_int, pid_t};
+use libc::{fork, wait, execlp, shm_open, ftruncate, mmap, sprintf, shm_unlink, pipe, close, read, write,
+     c_char, c_int, pid_t,
+     O_CREAT, O_RDWR, PROT_READ, PROT_WRITE, MAP_SHARED, O_RDONLY, c_void
+    };
 
 fn main() {
     // fork_example();
     // fork_with_wait();
     // multiple_fork();
     // multiple_fork2();
-    fork_execlp();
+    // fork_execlp();
+    // producer();
+    // consumer();
+    pipe_ex();
 }
 
 fn fork_example() {
@@ -84,6 +90,72 @@ fn fork_execlp() {
             // wait queue에서 child process가 종료되어 interrupt를 걸어주길 기다림
             wait(0 as *mut c_int);
             println!("child complete");
+        }
+    }
+}
+
+fn producer() {
+    unsafe {
+    const SIZE: i64 = 4096;
+    const NAME: &str = "OS";
+    const MESSAGE_0: &str = "Hello";
+    const MESSAGE_1: &str = "Shared Memory";
+
+    let shm_fd:i32;
+    let mut ptr:*mut i8;
+
+        shm_fd = shm_open(NAME.as_ptr() as *const c_char, O_CREAT | O_RDWR, 0666);
+
+        ftruncate(shm_fd, SIZE);
+        ptr = mmap(std::ptr::null_mut(), SIZE as usize, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0) as *mut i8;
+        
+        sprintf(ptr, MESSAGE_0.as_ptr() as *const c_char);
+        ptr = ptr.offset(MESSAGE_0.len() as isize);
+        sprintf(ptr, MESSAGE_1.as_ptr() as *const c_char);
+        ptr = ptr.offset(MESSAGE_1.len() as isize);
+    }
+}
+
+fn consumer() {
+    unsafe {
+    const SIZE: i64 = 4096;
+    const NAME: &str = "OS";
+    let shm_fd:i32;
+    let ptr:*mut i8;
+    
+        shm_fd = shm_open(NAME.as_ptr() as *const c_char, O_RDONLY, 0666);
+        ptr = mmap(std::ptr::null_mut(), SIZE as usize, PROT_READ, MAP_SHARED, shm_fd, 0) as *mut i8;
+        println!("{}", *ptr);
+        shm_unlink(NAME.as_ptr() as *const c_char);
+    }
+}
+
+fn pipe_ex() {
+    unsafe {
+    const BUFFER_SIZE: usize = 25;
+    const READ_END: usize = 0;
+    const WRITE_END: usize = 1;
+
+        let mut write_msg = String::from("Greetings");
+        let mut read_msg: String = String::with_capacity(BUFFER_SIZE);
+
+        let mut fd: [i32; 2] = [0; 2];
+        let pid: pid_t;
+
+        pipe(fd.as_mut_ptr() as *mut i32);
+
+        pid = fork();
+
+        if pid > 0 {
+            close(fd[READ_END]);
+            write(fd[WRITE_END], write_msg.as_mut_ptr() as *mut c_void, (write_msg.len()+1) as usize);
+            close(fd[WRITE_END]);
+        }
+        else if pid == 0 {
+            close(fd[WRITE_END]);
+            read(fd[READ_END], read_msg.as_mut_ptr() as *mut c_void, BUFFER_SIZE);
+            println!("read: {}", read_msg);
+            close(fd[READ_END]);
         }
     }
 }
