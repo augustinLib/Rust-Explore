@@ -17,6 +17,9 @@ fn main() {
     rectangle_1();
     rectangle_2();
     rectangle_3();
+    print_rectangle();
+    print_rectangle2();
+    area_with_method();
 }
 
 
@@ -121,9 +124,16 @@ fn area2(dimension: (u32, u32)) -> u32 {
     dimension.0 * dimension.1
 }
 
+#[derive(Debug)]
 struct Rectangle {
     width: u32,
     height: u32,
+}
+
+impl Rectangle {
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
 }
 
 fn rectangle_3() {
@@ -136,4 +146,21 @@ fn rectangle_3() {
 // 이를 통해 main함수는 여전히 rect1에 대한 소유권을 가지며, 계속 사용할 수 있음
 fn area3(rectangle: &Rectangle) -> u32 {
     rectangle.width * rectangle.height
+}
+
+fn print_rectangle() {
+    let rect1 = Rectangle { width: 30, height: 50 };
+
+    println!("rect1 is {:?}", rect1); // {:?}를 사용하여 디버깅 출력
+}
+
+fn print_rectangle2() {
+    let rect1 = Rectangle { width: 30, height: 50 };
+
+    println!("rect1 is {:#?}", rect1); // {:?}를 사용하여 디버깅 출력
+}
+
+fn area_with_method() {
+    let rect1 = Rectangle { width: 30, height: 50 };
+    println!("The area of the rectangle is {} square pixels.", rect1.area());
 }

@@ -216,4 +216,92 @@ fn main() {
 > error[E0277]: `Rectangle` doesn't implement `std::fmt::Display`
 
 `println!` 매크로는 다양한 형식으로 문자열을 출력할 수 있으며, `{}`는 `println!` 매크로가 해당 값의 `Display` 형식을 출력하도록 한다.  
+`Display`형식은 이제까지 다뤘던 기본 타입들에는 구현이 되어있지만, 사용자 정의 타입에는 구현되어 있지 않다. (python의 `__repr__`과 `__str__`과 비슷한 개념)  
+이러한 기본 타입들은 스스로를 표현하는 방법이 제한되어 있는데(`i32`타입의 값 1은 숫자 1로만 표현됨), 구조체의 경우에는 자신을 출력할 방법이 하나 이상이다. (값들을 쉼표로 구분해야 할지, 모든 필드를 다 보여줘야할지 등등)  
+따라서, Rust에서는 이러한 불명확성때문에 구조체가 `Display`를 구현하지 않는다.  
+
+이를 해결하기 위해, `Debug`라는 출력 형식을 사용하여 결과를 출력할 수 있다. `Debug` trait는 `println!` 매크로에서 `{:?}`를 사용하여 출력할 수 있으며, 개발자들에게 유용한 형식으로 구조체의 값을 출력해준다.  
+```rust
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn main() {
+    let rect1 = Rectangle { width: 30, height: 50 };
+
+    //{:?}를 사용하여 Debug 출력 형식 사용
+    println!("rect1 is {:?}", rect1); // error!
+}
+```
+
+그러나 위에 예제는 여전히 아래와 같은 에러를 발생시킨다.  
+> error[E0277]: `Rectangle` doesn't implement `Debug`  
+
+Rust는 `Debug` trait를 통해 디버깅 정보를 출력하는 기능을 제공하지만, 이를 사용하기 위해서는 구조체가 `Debug` trait를 구현해야 한다.  
+이를 위해, `#[derive(Debug)]` annotation을 구조체 정의에 추가해줘야 한다.  
+```rust
+// #[derive(Debug)] annotation을 구조체 정의에 추가
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn main() {
+    let rect1 = Rectangle { width: 30, height: 50 };
+
+    //{:?}를 사용하여 Debug 출력 형식 사용
+    println!("rect1 is {:?}", rect1); 
+}
+
+// rect1 is Rectangle { width: 30, height: 50 }
+```
+`rect1 is Rectangle { width: 30, height: 50 }`와 같이 정상적으로 구조체의 값을 출력할 수 있게 되었다.  
+만약 구조체에 포함된 필드의 수가 많다면, `{:?}` 대신 `{:#?}`를 사용하여 출력할 수 있다.  
+```rust
+// #[derive(Debug)] annotation을 구조체 정의에 추가
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn main() {
+    let rect1 = Rectangle { width: 30, height: 50 };
+
+    //{:?}를 사용하여 Debug 출력 형식 사용
+    println!("rect1 is {:?}", rect1); 
+}
+
+// rect1 is Rectangle {
+//     width: 30,
+//     height: 50,
+// }
+```
+그러면 한 줄로 출력되는 것이 아닌, 필드별로 한 줄씩 출력되는 것을 확인할 수 있다.  
+
+## Method(메서드)
+Rust에서의 메서드는 구조체의 context 내에서 정의되며, **첫 번째 parameter로 항상 메서드를 호출할 구조체의 인스턴스를 표현하는 `self`를 가진다.** (python과 동일)  
+이는 아래와 같이 구현할 수 있다.  
+```rust
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+impl Rectangle {
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+}
+
+fn main() {
+    let rect1 = Rectangle { width: 30, height: 50 };
+    println!("The area of the rectangle is {} square pixels.", rect1.area());
+}
+```
+위 예제 기준으로, Rectangle 타입의 context 안에 메서드를 정의하기 위해 `impl` 블록을 사용하였다.  
+이후 `impl` 블록 안에 `area`메서드를 정의하고, `self`를 통해 메서드를 호출할 구조체의 인스턴스를 표현하였다.  
 
