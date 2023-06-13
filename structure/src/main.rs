@@ -20,6 +20,8 @@ fn main() {
     print_rectangle();
     print_rectangle2();
     area_with_method();
+    rectangle_can_hold();
+    rectangle_4();
 }
 
 
@@ -163,4 +165,37 @@ fn print_rectangle2() {
 fn area_with_method() {
     let rect1 = Rectangle { width: 30, height: 50 };
     println!("The area of the rectangle is {} square pixels.", rect1.area());
+}
+
+impl Rectangle {
+    fn can_hold(&self, other: &Rectangle) -> bool {
+        self.width > other.width && self.height > other.height // self는 rect1, other는 rect2
+    }
+}
+
+fn rectangle_can_hold() {
+    let rect1 = Rectangle { width: 30, height: 50 };
+    let rect2 = Rectangle { width: 10, height: 40 };
+    let rect3 = Rectangle { width: 60, height: 45 };
+
+    println!("rect1 can hold rect2? {}", rect1.can_hold(&rect2)); // rect1은 rect2를 포함할 수 없음
+    println!("rect1 can hold rect3? {}", rect1.can_hold(&rect3)); // rect1은 rect3를 포함할 수 있음
+}
+
+#[derive(Debug)]
+struct Rectangle2 {
+    width: u32,
+    height: u32,
+}
+
+impl Rectangle2 {
+    // Rectangle2 구조체 타입 인스턴스 반환
+    fn square(size: u32) -> Rectangle2 {
+        Rectangle2 { width: size, height: size }
+    }
+}
+
+fn rectangle_4() {
+    let sq = Rectangle2::square(3);
+    println!("sq is {:#?}", sq);
 }

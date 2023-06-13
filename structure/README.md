@@ -305,3 +305,48 @@ fn main() {
 위 예제 기준으로, Rectangle 타입의 context 안에 메서드를 정의하기 위해 `impl` 블록을 사용하였다.  
 이후 `impl` 블록 안에 `area`메서드를 정의하고, `self`를 통해 메서드를 호출할 구조체의 인스턴스를 표현하였다.  
 
+## Associated Function(연관 함수)
+`impl` 블록에서는 self parameter를 가지지 않는 함수를 정의할 수도 있다. 이를 Associated Function(연관 함수)이라고 한다.  
+연관 함수들은 self paramter를 통해 인스턴스를 진적 전달받지 않기 때문에 메서드가 아니라 함수이다.  
+연관 함수의 대표적인 예로, `String::from`이 있다.   
+
+이러한 연관 함수는 구조체의 새로운 인스턴스를 반환하는 constructor(생성자)로서 사용된다.   
+예를 들어, 하나의 매개변수를 전달받아 이 값을 너비와 높이로 지정하는 `Rectangle` 구조체의 연관 함수를 정의해보자.  
+```rust
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+impl Rectangle {
+    // Rectangle 구조체 타입 인스턴스 반환
+    fn square(size: u32) -> Rectangle {
+        Rectangle { width: size, height: size }
+    }
+}
+```
+이러한 연관 함수는 구조체의 이름과 `::` 을 통해 호출할 수 있다. (`String::from`이 그 예이다.)
+즉, 아래와 같이 호출 가능하다.
+```rust
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+impl Rectangle {
+    // Rectangle 구조체 타입 인스턴스 반환
+    fn square(size: u32) -> Rectangle {
+        Rectangle { width: size, height: size }
+    }
+}
+
+fn main() {
+    let sq = Rectangle::square(3);
+    println!("sq is {:#?}", sq);
+}
+```
+
+## Multiple `impl` Blocks
+각 구조체는 여러 개의`impl` 블록을 선언할 수 있다. 예를 들어, 
