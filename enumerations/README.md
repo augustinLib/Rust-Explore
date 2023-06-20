@@ -46,3 +46,128 @@ fn main() {
 }
 ```
 
+이어서, 열거자와 구조체를 아래와 같이 조합하여 사용할 수 있다.  
+```rust
+enum IpAddrKind {
+    V4,
+    V6,
+}
+
+#[derive(Debug)]
+struct IpAddr {
+    kind: IpAddrKind,
+    address: String,
+}
+
+fn main() {
+    let home = IpAddr {
+        kind: IpAddrKind::V4,
+        address: String::from("127.0.0.1"),
+    };
+
+    let loopback = IpAddr {
+        kind: IpAddrKind::V6,
+        address: String::from("::1"),
+    };
+
+    println!("home: {:?}, loopback: {:?}", home, loopback);
+}
+```
+
+위 예제처럼 구조체와 열거자를 조합하여 사용함으로써, IP 타입과 그 값 모두를 하나로 묶어서(구조체) 표현할 수 있다.  
+
+그러나, 위와 같은 방법 이외에도 열거자를 구조체에 넣지 않고, 열거자만으로도 IP 타입과 그 값 모두를 하나로 묶어서 표현할 수 있다.  
+아래와 같이, V4와 V6의 값을 정의하면서, 연관된 값의 타입을 `String`타입으로 명시할 수 있다.  
+```rust
+#[derive(Debug)]
+enum IpAddr {
+    V4(String),
+    V6(String),
+}
+
+fn main() {
+    let home = IpAddr::V4(String::from("127.0.0.1"));
+    let loopback = IpAddr::V6(String::from("::1"));
+    println!("home: {:?}, loopback: {:?}", home, loopback);
+}
+```
+위 예제를 보면, 열거자의 값에 데이터를 직접 지정하는 것을 볼 수 있다. 위**와 같이 열거자를 정의하면서 타입을 명시해주고, 열거자의 값에 데이터를 직접 지정하는 방법을 통해, 별도의 구조체를 정의하지 않고도** IP 타입과 그 값 모두를 하나로 묶어서 표현할 수 있다.  
+
+또한, 위와 같은 방법은 **열거자에 나열된 각각의 값들이 서로 다른 수와 타입의 데이터를 가질 수 있다**는 장점을 가진다.  
+아래의 예제는 V4 형식은 `u8`값 4개, V6 형식은 `String`값 1개를 가지고 있다.  
+```rust
+#[derive(Debug)]
+enum IpAddr {
+    V4(u8, u8, u8, u8),
+    V6(String),
+}
+
+fn main() {
+    // u8, u8, u8, u8
+    let home = IpAddr::V4(127, 0, 0, 1);
+
+    // String
+    let loopback = IpAddr::V6(String::from("::1"));
+    println!("home: {:?}, loopback: {:?}", home, loopback);
+}
+```
+추가적으로, 열거자의 값에는 **문자열, 숫자, 구조체 등 어떤 종류의 데이터도 저장할 수 있다.** 심지어 다른 열거자를 저장해도 무방하다.  
+
+## Enumerate Values with Different Types
+아래의 예제를 통해, 다른 수와 다른 타입의 데이터를 가지는 열거자에 대해 자세히 알아보자.  
+```rust
+#[derive(Debug)]
+enum Message {
+    // Quit값은 연관 데이터를 갖지 않는다.
+    Quit,
+
+    // Move값은 anonymous struct(익명 구조체)를 갖는다.
+    Move { x: i32, y: i32 },
+
+    // Write값은 1개의 String type 값을 갖는다.
+    Write(String),
+
+    // ChangeColor값은 3개의 i32 type 값을 갖는다.
+    ChangeColor(i32, i32, i32),
+}
+```
+이와 같은 열거자를 정의하는 것은, 아래와 같이 각각의 항목에 대한 각기 다른 구조체 타입을 정의하는 것과 유사하다.  
+```rust
+struct QuitMessage; // unit struct
+struct MoveMessage {
+    x: i32,
+    y: i32,
+}
+struct WriteMessage(String); // tuple struct
+struct ChangeColorMessage(i32, i32, i32); // tuple struct
+```
+위 두 예제가 다른 점은, 열거자를 사용한 예제는 `struct`키워드를 사용하지 않으며, 열거자의 개별 값들은 모두 `Message`타입이라는 것이다. (아래의 예제는 각 구조체의 타입임 Ex : `QuitMessage`, `MoveMessage` 등)
+
+또한, 열거자 역시 **구조체처럼 `impl` 블록을 사용하여 메소드를 정의할 수 있다.**   
+```rust
+#[derive(Debug)]
+enum Message {
+    // Quit값은 연관 데이터를 갖지 않는다.
+    Quit,
+
+    // Move값은 anonymous struct(익명 구조체)를 갖는다.
+    Move { x: i32, y: i32 },
+
+    // Write값은 1개의 String type 값을 갖는다.
+    Write(String),
+
+    // ChangeColor값은 3개의 i32 type 값을 갖는다.
+    ChangeColor(i32, i32, i32),
+}
+
+impl Message {
+    fn call(&self) {
+        println!("call: {:?}", self);
+    }
+}
+
+fn main() {
+    let m = Message::Write(String::from("hello"));
+    m.call();
+}
+```
