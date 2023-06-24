@@ -6,6 +6,7 @@
 ## Contents
 - ### [Condition_loop](./condition_loop/)
 - ### [Data_type](./data_type/)
+- ### [Enumerations](./enumerations/)
 - ### [Function](./function/)
 - ### [Ownership](./ownership/)
 - ### [Structure](./structure/)
