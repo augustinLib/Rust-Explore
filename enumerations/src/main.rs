@@ -106,3 +106,22 @@ struct MoveMessage {
 }
 struct WriteMessage(String); // tuple struct
 struct ChangeColorMessage(i32, i32, i32); // tuple struct
+
+enum Option<T> {
+    Some(T),
+    None,
+}
+
+fn option() {
+    let some_number = Some(5);
+    let some_string = Some("a string");
+
+    // let absent_number: Option<i32> = None;
+}
+
+enum Coin {
+    Penny,
+    Nickel,
+    Dime,
+    Quarter,    
+}
